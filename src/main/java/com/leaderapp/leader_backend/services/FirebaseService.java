@@ -18,11 +18,10 @@ public class FirebaseService {
     private final Firestore db;
     private final FirebaseAuth auth;
 
-    public FirebaseService(){
+    public FirebaseService() {
         this.db = FirestoreClient.getFirestore();
         this.auth = FirebaseAuth.getInstance();
     }
-
 
     private final Firestore firestore = FirestoreClient.getFirestore();
 
@@ -35,7 +34,7 @@ public class FirebaseService {
     public UserRecord createMonitor(String email, String password, String fullName, String createdBy)
             throws FirebaseAuthException, ExecutionException, InterruptedException {
 
-        // Create user in Firebase Auth
+        // 1️⃣ Create user in Firebase Auth
         UserRecord.CreateRequest request = new UserRecord.CreateRequest()
                 .setEmail(email)
                 .setPassword(password)
@@ -45,7 +44,7 @@ public class FirebaseService {
 
         UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
 
-        // Save in Firestore
+        // 2️⃣ Save in Firestore
         Map<String, Object> monitorData = new HashMap<>();
         monitorData.put("uid", userRecord.getUid());
         monitorData.put("email", email);
@@ -60,22 +59,52 @@ public class FirebaseService {
         return userRecord;
     }
 
-    // ✅ Update Email
+    // ✅ Update Email — Fix: Also updates Firestore
     public void updateEmail(String uid, String newEmail) throws FirebaseAuthException {
-        FirebaseAuth.getInstance().updateUser(new UserRecord.UpdateRequest(uid).setEmail(newEmail));
+        // 1️⃣ Update Firebase Auth
+        FirebaseAuth.getInstance()
+                .updateUser(new UserRecord.UpdateRequest(uid).setEmail(newEmail));
+
+        // 2️⃣ Also update Firestore document
+        try {
+            FirestoreClient.getFirestore()
+                    .collection("users")
+                    .document(uid)
+                    .update("email", newEmail);
+
+            System.out.println("✅ Firestore email updated for user: " + uid);
+        } catch (Exception e) {
+            System.err.println("⚠️ Failed to update Firestore email for " + uid + ": " + e.getMessage());
+        }
     }
 
-    // ✅ Update Password
+    // ✅ Update Password — Adds optional audit log
     public void updatePassword(String uid, String newPassword) throws FirebaseAuthException {
-        FirebaseAuth.getInstance().updateUser(new UserRecord.UpdateRequest(uid).setPassword(newPassword));
+        // 1️⃣ Update Firebase Auth password
+        FirebaseAuth.getInstance()
+                .updateUser(new UserRecord.UpdateRequest(uid).setPassword(newPassword));
+
+        // 2️⃣ Optional audit: track last password change
+        try {
+            firestore.collection("users")
+                    .document(uid)
+                    .update("lastPasswordChange", System.currentTimeMillis());
+            System.out.println("🔐 Password updated for " + uid);
+        } catch (Exception e) {
+            System.err.println("⚠️ Failed to log password update for " + uid + ": " + e.getMessage());
+        }
     }
 
     // ✅ Set Active/Inactive Status
     public void setMonitorStatus(String uid, boolean active)
             throws FirebaseAuthException, ExecutionException, InterruptedException {
 
-        FirebaseAuth.getInstance().updateUser(new UserRecord.UpdateRequest(uid).setDisabled(!active));
-        firestore.collection("users").document(uid).update("status", active);
+        FirebaseAuth.getInstance()
+                .updateUser(new UserRecord.UpdateRequest(uid).setDisabled(!active));
+
+        firestore.collection("users")
+                .document(uid)
+                .update("status", active);
     }
 
     // ✅ Fetch all monitors created by a specific admin
@@ -97,13 +126,14 @@ public class FirebaseService {
         return monitorsList;
     }
 
+    // ✅ Delete Monitor (Auth + Firestore)
     public void deleteMonitor(String uid) throws Exception {
         // Delete from Firebase Authentication
         auth.deleteUser(uid);
 
         // Delete from Firestore users collection
         db.collection("users").document(uid).delete();
+
+        System.out.println("🗑️ Monitor deleted successfully: " + uid);
     }
-
-
 }
