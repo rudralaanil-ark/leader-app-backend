@@ -38,8 +38,8 @@ import com.google.firebase.FirebaseOptions;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Configuration
 public class FirebaseConfig {
@@ -47,22 +47,29 @@ public class FirebaseConfig {
     @PostConstruct
     public void initialize() {
         try {
-            String firebaseJson = System.getenv("FIREBASE_SERVICE_ACCOUNT");
-
-            if (firebaseJson == null || firebaseJson.isEmpty()) {
-                throw new RuntimeException("FIREBASE_SERVICE_ACCOUNT env variable not found");
+            // Do nothing if Firebase already initialized
+            List<FirebaseApp> apps = FirebaseApp.getApps();
+            if (apps != null && !apps.isEmpty()) {
+                return;
             }
 
-            InputStream serviceAccount =
-                    new ByteArrayInputStream(firebaseJson.getBytes(StandardCharsets.UTF_8));
+            String serviceAccount = System.getenv("FIREBASE_SERVICE_ACCOUNT");
+
+            // 🔑 IMPORTANT: Skip Firebase if env not present (local/tests)
+            if (serviceAccount == null || serviceAccount.isBlank()) {
+                System.out.println("⚠️ FIREBASE_SERVICE_ACCOUNT not found. Firebase disabled for this environment.");
+                return;
+            }
+
+            ByteArrayInputStream serviceAccountStream =
+                    new ByteArrayInputStream(serviceAccount.getBytes(StandardCharsets.UTF_8));
 
             FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccountStream))
                     .build();
 
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-            }
+            FirebaseApp.initializeApp(options);
+            System.out.println("✅ Firebase initialized successfully");
 
         } catch (Exception e) {
             throw new RuntimeException("Firebase initialization failed", e);
