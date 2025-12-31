@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.leaderapp.leader_backend.dtos.*;
 import com.leaderapp.leader_backend.services.FirebaseService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ import com.leaderapp.leader_backend.dtos.SetStatusRequest;
 public class AdminController {
     private final FirebaseService firebaseService;
 
-    public AdminController(FirebaseService firebaseService) {
+    public AdminController(@Lazy FirebaseService firebaseService) {
         this.firebaseService = firebaseService;
     }
 
@@ -78,7 +79,7 @@ public class AdminController {
     @GetMapping("/monitors")
     public ResponseEntity<?> getMonitors(
             @RequestHeader("Authorization") String authHeader)
-            throws ExecutionException, InterruptedException, FirebaseAuthException {
+            throws Exception {
 
         String token = extractToken(authHeader);
         FirebaseToken decoded = firebaseService.verifyToken(token);
