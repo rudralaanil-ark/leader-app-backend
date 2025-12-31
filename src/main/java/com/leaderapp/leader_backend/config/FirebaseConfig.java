@@ -31,24 +31,33 @@ import java.nio.charset.StandardCharsets;
 //}
 
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+//import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Configuration;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 @Configuration
 public class FirebaseConfig {
 
     @PostConstruct
-    public void init() {
+    public void initialize() {
         try {
             String firebaseJson = System.getenv("FIREBASE_SERVICE_ACCOUNT");
 
-            if (firebaseJson == null) {
-                throw new RuntimeException("Firebase env variable not found");
+            if (firebaseJson == null || firebaseJson.isEmpty()) {
+                throw new RuntimeException("FIREBASE_SERVICE_ACCOUNT env variable not found");
             }
 
-            InputStream is = new ByteArrayInputStream(
-                    firebaseJson.getBytes(StandardCharsets.UTF_8)
-            );
+            InputStream serviceAccount =
+                    new ByteArrayInputStream(firebaseJson.getBytes(StandardCharsets.UTF_8));
 
             FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(is))
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
 
             if (FirebaseApp.getApps().isEmpty()) {
@@ -56,7 +65,7 @@ public class FirebaseConfig {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Firebase initialization failed", e);
         }
     }
 }
