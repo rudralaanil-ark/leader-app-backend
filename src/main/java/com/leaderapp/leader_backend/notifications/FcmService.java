@@ -1,5 +1,6 @@
 package com.leaderapp.leader_backend.notifications;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
@@ -10,12 +11,21 @@ import java.util.Map;
 @Service
 public class FcmService {
 
+    private boolean isFirebaseAvailable() {
+        return !FirebaseApp.getApps().isEmpty();
+    }
+
     public void sendToTopic(
             String topic,
             String title,
             String body,
             Map<String, String> data
     ) {
+        if (!isFirebaseAvailable()) {
+            System.out.println("⚠️ Firebase not initialized. Skipping FCM.");
+            return;
+        }
+
         try {
             Message message = Message.builder()
                     .setTopic(topic)
@@ -28,8 +38,10 @@ public class FcmService {
                     .putAllData(data)
                     .build();
 
-            String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("✅ FCM sent successfully: " + response);
+            String response =
+                    FirebaseMessaging.getInstance().send(message);
+
+            System.out.println("✅ FCM sent: " + response);
 
         } catch (Exception e) {
             System.err.println("❌ Failed to send FCM");

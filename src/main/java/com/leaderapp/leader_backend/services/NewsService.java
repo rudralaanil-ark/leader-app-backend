@@ -2,6 +2,7 @@ package com.leaderapp.leader_backend.services;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.stereotype.Service;
 
@@ -11,20 +12,25 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class NewsService {
 
-    private final Firestore db;
-
-    public NewsService() {
-        this.db = FirestoreClient.getFirestore();
+    private Firestore getDb() {
+        if (FirebaseApp.getApps().isEmpty()) {
+            throw new IllegalStateException("Firebase not initialized");
+        }
+        return FirestoreClient.getFirestore();
     }
 
     // ✅ Add News
-    public void addNews(Map<String, Object> newsData) throws ExecutionException, InterruptedException {
-        db.collection("news").add(newsData).get();
+    public void addNews(Map<String, Object> newsData)
+            throws ExecutionException, InterruptedException {
+        getDb().collection("news").add(newsData).get();
     }
 
     // ✅ Get all news
-    public List<Map<String, Object>> getAllNews() throws ExecutionException, InterruptedException {
-        var docs = db.collection("news")
+    public List<Map<String, Object>> getAllNews()
+            throws ExecutionException, InterruptedException {
+
+        var docs = getDb()
+                .collection("news")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .get()
@@ -39,9 +45,12 @@ public class NewsService {
         return newsList;
     }
 
-    // ✅ Get a single news by ID
-    public Map<String, Object> getNewsById(String id) throws ExecutionException, InterruptedException {
-        DocumentSnapshot doc = db.collection("news").document(id).get().get();
+    public Map<String, Object> getNewsById(String id)
+            throws ExecutionException, InterruptedException {
+
+        DocumentSnapshot doc =
+                getDb().collection("news").document(id).get().get();
+
         if (!doc.exists()) return null;
 
         Map<String, Object> data = doc.getData();
@@ -49,33 +58,28 @@ public class NewsService {
         return data;
     }
 
-    // ✅ Update news by ID
     public boolean updateNews(String id, Map<String, Object> updates)
             throws ExecutionException, InterruptedException {
 
-        DocumentReference docRef = db.collection("news").document(id);
+        DocumentReference docRef =
+                getDb().collection("news").document(id);
+
         DocumentSnapshot doc = docRef.get().get();
+        if (!doc.exists()) return false;
 
-        if (!doc.exists()) {
-            return false;
-        }
-
-        updates.put("updatedAt", new Date().getTime());
-        ApiFuture<WriteResult> future = docRef.update(updates);
-        future.get();
+        updates.put("updatedAt", System.currentTimeMillis());
+        docRef.update(updates).get();
         return true;
     }
 
-    // ✅ Delete news
     public boolean deleteNews(String id)
             throws ExecutionException, InterruptedException {
 
-        DocumentReference docRef = db.collection("news").document(id);
-        DocumentSnapshot doc = docRef.get().get();
+        DocumentReference docRef =
+                getDb().collection("news").document(id);
 
-        if (!doc.exists()) {
-            return false;
-        }
+        DocumentSnapshot doc = docRef.get().get();
+        if (!doc.exists()) return false;
 
         docRef.delete().get();
         return true;
