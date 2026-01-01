@@ -1,0 +1,59 @@
+[33mcommit a8dc9c0f417612a9166635f581c1a7ac77b8285e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Thu Jan 1 23:38:11 2026 +0530
+
+    removed the notification and changed the firebase config file and more in this update and removed the firebase file and removed aws keys
+
+[33mcommit 829c0ebb380a78964c9f1b90252bf5eb3d38e6d9[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Thu Jan 1 23:36:12 2026 +0530
+
+    removed the notification and changed the firebase config file and more in this update
+
+[33mcommit 1c9fac7842ba2cb13996af6648e88c075514b0f4[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Thu Jan 1 11:35:33 2026 +0530
+
+    News auto push notification
+
+[33mcommit f0828cfff0fcba79340a1e065216efad4db1be88[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Wed Dec 31 21:15:10 2025 +0530
+
+    checking the Notification - FCM sending
+
+[33mcommit a32518a5fad19c23adf94958e304f3e6a342adec[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Wed Dec 31 15:21:57 2025 +0530
+
+    updated FirebaseService and Admin Controller
+
+[33mcommit a886487fb8ebcee2fc9b62075a067169cff7bd52[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Wed Dec 31 13:08:24 2025 +0530
+
+    Disable Spring contextLoads test
+
+[33mcommit 193a9b769b447e81f66973d9a78cb21fff12a0bb[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Wed Dec 31 12:36:58 2025 +0530
+
+    Fix FirebaseConfig to use env variable instead of file
+
+[33mcommit 8ae00b85e74d693fc3ef14ecec66afb584a987a1[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Wed Dec 31 12:30:09 2025 +0530
+
+    Fix Railway build command
+
+[33mcommit 64ac57265c796be4ded171e279acf3c6ef08ec3e[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Wed Dec 31 12:24:56 2025 +0530
+
+    Remove hardcoded AWS keys
+
+[33mcommit bf9ed963c407d9ea50abd8a52a8dd0ac6d876bbe[m
+Author: Anil <rudralaanil@gmail.com>
+Date:   Mon Nov 10 13:53:36 2025 +0530
+
+    First Working spring boot backend code for the leader-app
